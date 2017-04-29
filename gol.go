@@ -24,9 +24,11 @@ import (
 // main ... Main functions that begins the simulation of life and acts as a state based loop.
 func main() {
 
+	//Find out if the user wants to load a custoom map and assigns values dependant on that.
+	// customMap, loadMap := queryMaps("gol/")
+
 	//Creating and passing a reference to the GOL object.
 	gol := makeGOL()
-
 	//While GOL is simulating.
 	for gol.isSimulating {
 		//Simulating using the reference to the GOL object.
@@ -34,7 +36,7 @@ func main() {
 
 		//Draw the GOL cells.
 		draw(gol)
-		time.Sleep(time.Second / 2)
+		time.Sleep(time.Second / 7)
 	}
 
 }
@@ -45,6 +47,8 @@ type GOL struct {
 	cells        [64][64]int
 	isSimulating bool
 	hasStart     bool
+	customMap    bool
+	mapInfo      os.FileInfo
 }
 
 // makeGOL ... Creates the GOL object and sets the running to true.
@@ -54,8 +58,19 @@ func makeGOL() *GOL {
 	gol.cellSize = len(gol.cells)
 	//Will be used to reference the start of the simulation and to allow seeding.
 	gol.hasStart = false
+	// gol.customMap = loadMap
+
+	// if gol.customMap {
+	// 	gol.cells = customMap.values
+	// }
 
 	return gol
+}
+
+// CustomMap ... Sets up the custom file format container.
+type CustomMap struct {
+	size   int
+	values [][]int
 }
 
 // simulate ... Begins simulating the GOL and using the object alters the values and checks the rules.
@@ -63,6 +78,10 @@ func simulate(gol *GOL) {
 	if !gol.hasStart {
 		seedCells(gol)
 		gol.hasStart = true
+		// if !gol.hasStart && gol.customMap {
+		// 	loadMap(gol.mapInfo)
+		// 	gol.hasStart = true
+		// }
 	} else {
 		checkRules(gol)
 	}
@@ -70,21 +89,21 @@ func simulate(gol *GOL) {
 
 // draw ... Draws the life
 func draw(gol *GOL) {
-	board := new([len(gol.cells)][len(gol.cells)]string)
+	board := ""
 
 	for cellsY := range gol.cells {
 		for cellsX := range gol.cells {
 			if cellsX == 0 {
-				board[cellsY][cellsX] = "\n"
+				board += "\n"
 			}
 
 			switch gol.cells[cellsX][cellsY] {
 
 			case 0:
-				board[cellsX][cellsY] += " "
+				board += " "
 
 			case 1:
-				board[cellsX][cellsY] += "■"
+				board += "■"
 			}
 
 		}
@@ -122,8 +141,11 @@ func checkRules(gol *GOL) {
 			for i := -1; i <= 1; i++ {
 				for j := -1; j <= 1; j++ {
 					if i != 0 && j != 0 {
-						//Get the value at the 3x3 array that is wrapped around the cell size and check if the neighbors are alive.
-						neighbors += gol.cells[mod(cellsX-i, len(gol.cells))][mod(cellsY-j, len(gol.cells))]
+						if cellsX+i > 0 && cellsX+i < len(gol.cells) && cellsY+j > 0 && cellsY+j < len(gol.cells) {
+							if gol.cells[cellsX+i][cellsY+j] == 1 {
+								neighbors++
+							}
+						}
 					}
 				}
 			}
@@ -139,12 +161,73 @@ func checkRules(gol *GOL) {
 			}
 
 			//3. Any live cell with more than three live neighbors dies, as if by overpopulation.
-			if neighbors >= 3 {
+			if neighbors > 3 {
 				gol.cells[cellsX][cellsY] = 0
 			}
 		}
 	}
 }
+
+// func queryMaps(path string) (*CustomMap, bool) {
+// 	files, _ := ioutil.ReadDir(path)
+
+// 	fmt.Printf("Would you like to load any of these maps? Type in the desired map id or N to generate a random map.\n")
+
+// 	for i := 0; i < len(files); i++ {
+// 		fmt.Printf("ID: %v. Map: %v\n", i, files[i].Name())
+// 	}
+
+// 	reader := bufio.NewReader(os.Stdin)
+// 	text, _ := reader.ReadString('\n')
+
+// 	doLoad := true
+
+// 	customMap := new(CustomMap)
+// 	fmt.Printf("%v\n", text == "N")
+// 	if text == "N" {
+// 		customMap.size = 64
+// 		customMap.values = make([][]int, customMap.size)
+// 	}
+
+// 	if text != "N" {
+// 		id, _ := strconv.Atoi(text)
+
+// 		customMap = loadMap(files[id])
+
+// 	}
+
+// 	if text == "N" {
+// 		doLoad = false
+// 	}
+
+// 	return customMap, doLoad
+
+// }
+
+// func loadMap(mapInfo os.FileInfo) *CustomMap {
+// 	thisMap := new(CustomMap)
+
+// 	file, _ := ioutil.ReadFile("gol/" + mapInfo.Name())
+
+// 	thisMap.size, _ = strconv.Atoi(string(file[0]))
+// 	thisMap.values = make([][]int, thisMap.size)
+
+// 	c := 0
+// 	x := 0
+// 	y := 0
+
+// 	for char := range file {
+// 		thisMap.values[x][y], _ = strconv.Atoi(string(file[c]))
+// 		c++
+// 		x++
+// 		if char == '\n' {
+// 			y++
+// 			x %= thisMap.size
+// 		}
+// 	}
+
+// 	return thisMap
+// }
 
 // mod ... Mods a with b
 func mod(a, b int) int {
