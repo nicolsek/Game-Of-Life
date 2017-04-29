@@ -1,5 +1,11 @@
 package main
 
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
 /* Rules! */
 
 /*
@@ -16,14 +22,14 @@ package main
 // main ... Main functions that begins the simulation of life and acts as a state based loop.
 func main() {
 	//Creating and passing a reference to the GOL object.
-	GOL := makeGOL()
+	gol := makeGOL()
 
 	//While GOL is simulating.
-	for GOL.isSimulating {
+	for gol.isSimulating {
 		//Simulating using the reference to the GOL object.
-		simulate(GOL)
+		simulate(gol)
 		//Draw the GOL cells.
-		draw(GOL)
+		draw(gol)
 	}
 
 }
@@ -32,21 +38,40 @@ func main() {
 type GOL struct {
 	cells        [256][256]int
 	isSimulating bool
+	hasStart     bool
 }
 
 // makeGOL ... Creates the GOL object and sets the running to true.
 func makeGOL() *GOL {
-	GOL := new(GOL)
-	GOL.isSimulating = true
+	gol := new(GOL)
+	gol.isSimulating = true
+	//Will be used to reference the start of the simulation and to allow seeding.
+	gol.hasStart = false
 
-	return GOL
+	return gol
 }
 
 // simulate ... Begins simulating the GOL and using the object alters the values and checks the rules.
 func simulate(gol *GOL) {
+	if gol.hasStart {
 
+	} else {
+		seedCells(gol)
+	}
 }
 
 func draw(gol *GOL) {
 
+}
+
+func seedCells(gol *GOL) {
+	// -\(.-.)/- It's a way of seeding, don't judge me I'm 16.
+	rand.Seed(time.Since(time.Now()).Nanoseconds())
+	for cellsX := range gol.cells {
+		for cellsY := range gol.cells {
+			gol.cells[cellsX][cellsY] = rand.Intn(2)
+		}
+	}
+
+	fmt.Printf("%v\n", gol.cells)
 }
