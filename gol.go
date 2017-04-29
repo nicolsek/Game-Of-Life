@@ -120,10 +120,16 @@ func draw(gol *GOL) {
 func seedCells(gol *GOL) {
 	// -\(.-.)/- It's a way of seeding, don't judge me I'm 16.
 	rand.Seed(time.Now().UTC().UnixNano())
-
+	c := 0
 	for cellsY := range gol.cells {
 		for cellsX := range gol.cells {
-			gol.cells[cellsX][cellsY] = rand.Intn(2)
+			if mod(c, rand.Intn(7)+1) == 0 {
+				gol.cells[cellsX][cellsY] = rand.Intn(2)
+			} else {
+				gol.cells[cellsX][cellsY] = 0
+			}
+
+			c++
 		}
 	}
 
@@ -131,6 +137,16 @@ func seedCells(gol *GOL) {
 
 // checkRules ... Goes through a list of the rules and iteratively checks them and does things if they pass or fail.
 func checkRules(gol *GOL) {
+
+	isValid := func(x, y int) int {
+		//Trickery with the compiler here. It doesn't parse the entire thing so if the first bits are true than we're safe from a pointer exception.
+		if x >= 0 && x < gol.cellSize && y >= 0 && y < gol.cellSize && gol.cells[x][y] == 1 {
+			return 1
+		}
+
+		//Anything else should be 0.
+		return 0
+	}
 
 	for cellsY := range gol.cells {
 		for cellsX := range gol.cells {
@@ -141,11 +157,7 @@ func checkRules(gol *GOL) {
 			for i := -1; i <= 1; i++ {
 				for j := -1; j <= 1; j++ {
 					if i != 0 && j != 0 {
-						if cellsX+i > 0 && cellsX+i < len(gol.cells) && cellsY+j > 0 && cellsY+j < len(gol.cells) {
-							if gol.cells[cellsX+i][cellsY+j] == 1 {
-								neighbors++
-							}
-						}
+						neighbors += isValid(cellsX+i, cellsY+j)
 					}
 				}
 			}
@@ -155,14 +167,18 @@ func checkRules(gol *GOL) {
 				gol.cells[cellsX][cellsY] = 0
 			}
 
-			//4. Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
-			if neighbors == 3 {
+			if neighbors == 2 {
 				gol.cells[cellsX][cellsY] = 1
 			}
 
 			//3. Any live cell with more than three live neighbors dies, as if by overpopulation.
 			if neighbors > 3 {
 				gol.cells[cellsX][cellsY] = 0
+			}
+
+			//4. Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
+			if neighbors == 3 {
+				gol.cells[cellsX][cellsY] = 1
 			}
 		}
 	}
