@@ -167,7 +167,7 @@ func checkRules(gol *GOL) {
 				gol.cells[cellsX][cellsY] = 0
 			}
 
-			if neighbors == 2 {
+			if neighbors == 2 || neighbors == 3 && gol.cells[cellsX][cellsY] == 1 {
 				gol.cells[cellsX][cellsY] = 1
 			}
 
