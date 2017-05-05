@@ -1,0 +1,2 @@
+# Game-Of-Life
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4902c97c0ce44a839d4257bdd3b05f9d)](https://www.codacy.com/app/nicolsek/Game-Of-Life?utm_source=github.com&utm_medium=referral&utm_content=nicolsek/Game-Of-Life&utm_campaign=badger)
